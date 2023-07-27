@@ -1177,11 +1177,11 @@
 #define INPUT_SHAPING_Y
 #if ANY(INPUT_SHAPING_X, INPUT_SHAPING_Y)
   #if ENABLED(INPUT_SHAPING_X)
-    #define SHAPING_FREQ_X  25          // (Hz) The default dominant resonant frequency on the X axis.
+    #define SHAPING_FREQ_X  40          // (Hz) The default dominant resonant frequency on the X axis.
     #define SHAPING_ZETA_X  0.15f       // Damping ratio of the X axis (range: 0.0 = no damping to 1.0 = critical damping).
   #endif
   #if ENABLED(INPUT_SHAPING_Y)
-    #define SHAPING_FREQ_Y  25          // (Hz) The default dominant resonant frequency on the Y axis.
+    #define SHAPING_FREQ_Y  40          // (Hz) The default dominant resonant frequency on the Y axis.
     #define SHAPING_ZETA_Y  0.15f       // Damping ratio of the Y axis (range: 0.0 = no damping to 1.0 = critical damping).
   #endif
   //#define SHAPING_MIN_FREQ  20        // By default the minimum of the shaping frequencies. Override to affect SRAM usage.
@@ -1584,13 +1584,13 @@
    * LED Control Menu
    * Add LED Control to the LCD menu
    */
-  #define LED_COLOR_PRESETS                 // Enable the Preset Color menu option
-  #define LED_USER_PRESET_RED        255  // User defined RED value
-  #define LED_USER_PRESET_GREEN      128  // User defined GREEN value
-  #define LED_USER_PRESET_BLUE         0  // User defined BLUE value
-  #define LED_USER_PRESET_WHITE      255  // User defined WHITE value
-  #define LED_USER_PRESET_BRIGHTNESS 255  // User defined intensity
-  #define LED_USER_PRESET_STARTUP       // Have the printer display the user preset color on startup
+  // #define LED_COLOR_PRESETS                 // Enable the Preset Color menu option
+  // #define LED_USER_PRESET_RED        255  // User defined RED value
+  // #define LED_USER_PRESET_GREEN      128  // User defined GREEN value
+  // #define LED_USER_PRESET_BLUE         0  // User defined BLUE value
+  // #define LED_USER_PRESET_WHITE      255  // User defined WHITE value
+  // #define LED_USER_PRESET_BRIGHTNESS 255  // User defined intensity
+  // #define LED_USER_PRESET_STARTUP       // Have the printer display the user preset color on startup
   //#define LED_CONTROL_MENU
   #if ENABLED(LED_CONTROL_MENU)
     #define LED_COLOR_PRESETS                 // Enable the Preset Color menu option
@@ -2877,7 +2877,7 @@
   #define INTERPOLATE      true
 
   #if AXIS_IS_TMC_CONFIG(X)
-    #define X_CURRENT       1200        // (mA) RMS current. Multiply by 1.414 for peak current.
+    #define X_CURRENT       580        // (mA) RMS current. Multiply by 1.414 for peak current.
     #define X_CURRENT_HOME  X_CURRENT  // (mA) RMS current for sensorless homing
     #define X_MICROSTEPS     16        // 0..256
     #define X_RSENSE          0.11     // Multiplied x1000 for TMC26X
@@ -2897,7 +2897,7 @@
   #endif
 
   #if AXIS_IS_TMC_CONFIG(Y)
-    #define Y_CURRENT       1200
+    #define Y_CURRENT       580
     #define Y_CURRENT_HOME  Y_CURRENT
     #define Y_MICROSTEPS     16
     #define Y_RSENSE          0.11
@@ -2917,7 +2917,7 @@
   #endif
 
   #if AXIS_IS_TMC_CONFIG(Z)
-    #define Z_CURRENT       1200
+    #define Z_CURRENT       580
     #define Z_CURRENT_HOME  Z_CURRENT
     #define Z_MICROSTEPS     16
     #define Z_RSENSE          0.11
@@ -3017,7 +3017,7 @@
   #endif
 
   #if AXIS_IS_TMC_CONFIG(E0)
-    #define E0_CURRENT      350
+    #define E0_CURRENT      700
     #define E0_MICROSTEPS    16
     #define E0_RSENSE         0.11
     #define E0_CHAIN_POS     -1
