@@ -1110,12 +1110,12 @@
  * Fixed-time-based Motion Control -- EXPERIMENTAL
  * Enable/disable and set parameters with G-code M493.
  */
-//#define FT_MOTION
+#define FT_MOTION
 #if ENABLED(FT_MOTION)
   #define FTM_DEFAULT_MODE        ftMotionMode_DISABLED // Default mode of fixed time control. (Enums in ft_types.h)
   #define FTM_DEFAULT_DYNFREQ_MODE dynFreqMode_DISABLED // Default mode of dynamic frequency calculation. (Enums in ft_types.h)
-  #define FTM_SHAPING_DEFAULT_X_FREQ 25.0f              // (Hz) Default peak frequency used by input shapers.
-  #define FTM_SHAPING_DEFAULT_Y_FREQ 25.0f              // (Hz) Default peak frequency used by input shapers.
+  #define FTM_SHAPING_DEFAULT_X_FREQ 28.9f              // (Hz) Default peak frequency used by input shapers.
+  #define FTM_SHAPING_DEFAULT_Y_FREQ 24.9f              // (Hz) Default peak frequency used by input shapers.
   #define FTM_LINEAR_ADV_DEFAULT_ENA false              // Default linear advance enable (true) or disable (false).
   #define FTM_LINEAR_ADV_DEFAULT_K    0.01f              // Default linear advance gain.
   #define FTM_SHAPING_ZETA            0.1f              // Zeta used by input shapers.
@@ -1173,15 +1173,15 @@
  *  X<1>         Set the given parameters only for the X axis.
  *  Y<1>         Set the given parameters only for the Y axis.
  */
-#define INPUT_SHAPING_X
-#define INPUT_SHAPING_Y
+// #define INPUT_SHAPING_X
+// #define INPUT_SHAPING_Y
 #if ANY(INPUT_SHAPING_X, INPUT_SHAPING_Y)
   #if ENABLED(INPUT_SHAPING_X)
-    #define SHAPING_FREQ_X  40          // (Hz) The default dominant resonant frequency on the X axis.
+    #define SHAPING_FREQ_X  28.9          // (Hz) The default dominant resonant frequency on the X axis.
     #define SHAPING_ZETA_X  0.15f       // Damping ratio of the X axis (range: 0.0 = no damping to 1.0 = critical damping).
   #endif
   #if ENABLED(INPUT_SHAPING_Y)
-    #define SHAPING_FREQ_Y  40          // (Hz) The default dominant resonant frequency on the Y axis.
+    #define SHAPING_FREQ_Y  24.9          // (Hz) The default dominant resonant frequency on the Y axis.
     #define SHAPING_ZETA_Y  0.15f       // Damping ratio of the Y axis (range: 0.0 = no damping to 1.0 = critical damping).
   #endif
   //#define SHAPING_MIN_FREQ  20        // By default the minimum of the shaping frequencies. Override to affect SRAM usage.
