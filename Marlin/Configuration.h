@@ -1220,14 +1220,14 @@
  * Override with M92
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 400, 407.2 }
+#define DEFAULT_AXIS_STEPS_PER_UNIT   { 80, 80, 400, 405.0 }
 
 /**
  * Default Max Feed Rate (linear=mm/s, rotational=°/s)
  * Override with M203
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_MAX_FEEDRATE          { 200, 200, 150, 250 }
+#define DEFAULT_MAX_FEEDRATE          { 200, 200, 5, 250 }
 
 //#define LIMITED_MAX_FR_EDITING        // Limit edit via M203 or LCD to DEFAULT_MAX_FEEDRATE * 2
 #if ENABLED(LIMITED_MAX_FR_EDITING)
@@ -1240,7 +1240,7 @@
  * Override with M201
  *                                      X, Y, Z [, I [, J [, K...]]], E0 [, E1[, E2...]]
  */
-#define DEFAULT_MAX_ACCELERATION      { 1350, 1350, 300, 2000 }
+#define DEFAULT_MAX_ACCELERATION      { 1350, 1350, 100, 2000 }
 
 //#define LIMITED_MAX_ACCEL_EDITING     // Limit edit via M201 or LCD to DEFAULT_MAX_ACCELERATION * 2
 #if ENABLED(LIMITED_MAX_ACCEL_EDITING)
@@ -1539,8 +1539,8 @@
  *     |    [-]    |
  *     O-- FRONT --+
  */
-#define NOZZLE_Z_OFFSET 1.55
-#define NOZZLE_TO_PROBE_OFFSET { 43.0, 7.0, -NOZZLE_Z_OFFSET }
+#define NOZZLE_Z_OFFSET 0.92
+#define NOZZLE_TO_PROBE_OFFSET { -55, -12, -NOZZLE_Z_OFFSET }
 
 // Enable and set to use a specific tool for probing. Disable to allow any tool.
 #define PROBING_TOOL 0
