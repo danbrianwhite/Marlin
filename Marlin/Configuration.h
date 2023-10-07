@@ -1442,13 +1442,15 @@
   #define PROBE_STOW_FEEDRATE   (133*60)  // (mm/min) Probe stow speed
 
   #define Z_PROBE_TINY_M (NOZZLE_Z_OFFSET + Z_AFTER_HOMING)
-  #define MAG_MOUNTED_DEPLOY_1 { PROBE_DEPLOY_FEEDRATE, { 150, -2.5, Z_PROBE_TINY_M } }  // Move to side Dock & Attach probe
-  #define MAG_MOUNTED_DEPLOY_2 { PROBE_DEPLOY_FEEDRATE, { 150, 20, Z_PROBE_TINY_M } }  // Move probe off dock
+  #define X_PROBE_TINY_M 152.4
+  
+  #define MAG_MOUNTED_DEPLOY_1 { PROBE_DEPLOY_FEEDRATE, { X_PROBE_TINY_M, -2.5, Z_PROBE_TINY_M } }  // Move to side Dock & Attach probe
+  #define MAG_MOUNTED_DEPLOY_2 { PROBE_DEPLOY_FEEDRATE, { X_PROBE_TINY_M, 20, Z_PROBE_TINY_M } }  // Move probe off dock
   // #define MAG_MOUNTED_DEPLOY_3 { PROBE_DEPLOY_FEEDRATE, { X_CENTER, Y_CENTER, 30 } }  // Extra move if needed
   // #define MAG_MOUNTED_DEPLOY_4 { PROBE_DEPLOY_FEEDRATE, {   0,   0,  0 } }  // Extra move if needed
   // #define MAG_MOUNTED_DEPLOY_5 { PROBE_DEPLOY_FEEDRATE, {   0,   0,  0 } }  // Extra move if needed
-  #define MAG_MOUNTED_STOW_1   { PROBE_STOW_FEEDRATE,   { 150, 20, Z_PROBE_TINY_M } }  // Move to dock
-  #define MAG_MOUNTED_STOW_2   { PROBE_STOW_FEEDRATE,   { 150, -2.5,  Z_PROBE_TINY_M } }  // Place probe beside remover
+  #define MAG_MOUNTED_STOW_1   { PROBE_STOW_FEEDRATE,   { X_PROBE_TINY_M, 20, Z_PROBE_TINY_M } }  // Move to dock
+  #define MAG_MOUNTED_STOW_2   { PROBE_STOW_FEEDRATE,   { X_PROBE_TINY_M, -2.5,  Z_PROBE_TINY_M } }  // Place probe beside remover
   #define MAG_MOUNTED_STOW_3   { PROBE_STOW_FEEDRATE,   { 110, -2.5,  Z_PROBE_TINY_M } }  // Side move to remove probe
   // #define MAG_MOUNTED_STOW_4   { PROBE_STOW_FEEDRATE,   { X_CENTER, Y_CENTER, 30 } }  // Side move to remove probe
   // #define MAG_MOUNTED_STOW_5   { PROBE_STOW_FEEDRATE,   {   0,   0,  0 } }  // Extra move if needed
@@ -2011,7 +2013,7 @@
  */
 #define PREHEAT_BEFORE_LEVELING
 #if ENABLED(PREHEAT_BEFORE_LEVELING)
-  // #define LEVELING_NOZZLE_TEMP 120   // (°C) Only applies to E0 at this time
+  #define LEVELING_NOZZLE_TEMP 180   // (°C) Only applies to E0 at this time
   #define LEVELING_BED_TEMP     60
 #endif
 
@@ -2236,7 +2238,7 @@
 #define Z_SAFE_HOMING
 
 #if ENABLED(Z_SAFE_HOMING)
-  #define Z_SAFE_HOMING_X_POINT 150.6  // X point for Z homing
+  #define Z_SAFE_HOMING_X_POINT 153  // X point for Z homing
   #define Z_SAFE_HOMING_Y_POINT 124.7  // Y point for Z homing
   //#define Z_SAFE_HOMING_POINT_ABSOLUTE  // Ignore home offsets (M206) for Z homing position
 #endif
