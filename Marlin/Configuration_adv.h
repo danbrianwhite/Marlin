@@ -1110,7 +1110,7 @@
  * Fixed-time-based Motion Control -- EXPERIMENTAL
  * Enable/disable and set parameters with G-code M493.
  */
-//#define FT_MOTION
+#define FT_MOTION
 #if ENABLED(FT_MOTION)
   #define FTM_DEFAULT_MODE        ftMotionMode_DISABLED // Default mode of fixed time control. (Enums in ft_types.h)
   #define FTM_DEFAULT_DYNFREQ_MODE dynFreqMode_DISABLED // Default mode of dynamic frequency calculation. (Enums in ft_types.h)
@@ -1121,7 +1121,7 @@
   #define FTM_SHAPING_ZETA            0.1f              // Zeta used by input shapers.
   #define FTM_SHAPING_V_TOL           0.05f             // Vibration tolerance used by EI input shapers.
 
-  //#define FT_MOTION_MENU                              // Provide a MarlinUI menu to set M493 parameters.
+  #define FT_MOTION_MENU                              // Provide a MarlinUI menu to set M493 parameters.
 
   /**
    * Advanced configuration
@@ -1187,8 +1187,8 @@
  *  X<1>         Set the given parameters only for the X axis.
  *  Y<1>         Set the given parameters only for the Y axis.
  */
-#define INPUT_SHAPING_X
-#define INPUT_SHAPING_Y
+// #define INPUT_SHAPING_X
+// #define INPUT_SHAPING_Y
 #if ANY(INPUT_SHAPING_X, INPUT_SHAPING_Y)
   #if ENABLED(INPUT_SHAPING_X)
     #define SHAPING_FREQ_X  48.6          // (Hz) The default dominant resonant frequency on the X axis.
