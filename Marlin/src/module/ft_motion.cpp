@@ -195,8 +195,8 @@ void FTMotion::loop() {
     LOGICAL_AXIS_CODE(
       TCOPY(e),
       TCOPY(x), TCOPY(y), TCOPY(z),
-      TCOPY(i), TCOPY(j), TCOPY(k),
-      TCOPY(u), TCOPY(v), TCOPY(w)
+      // TCOPY(i), TCOPY(j), TCOPY(k),
+      // TCOPY(u), TCOPY(v), TCOPY(w)
     );
 
     // Shift the time series back in the window
@@ -204,8 +204,8 @@ void FTMotion::loop() {
     LOGICAL_AXIS_CODE(
       TSHIFT(e),
       TSHIFT(x), TSHIFT(y), TSHIFT(z),
-      TSHIFT(i), TSHIFT(j), TSHIFT(k),
-      TSHIFT(u), TSHIFT(v), TSHIFT(w)
+      // TSHIFT(i), TSHIFT(j), TSHIFT(k),
+      // TSHIFT(u), TSHIFT(v), TSHIFT(w)
     );
 
     // ... data is ready in trajMod.
@@ -407,29 +407,16 @@ void FTMotion::loadBlockData(block_t * const current_block) {
 
   startPosn = endPosn_prevBlock;
   xyze_pos_t moveDist = LOGICAL_AXIS_ARRAY(
-    current_block->steps.e * planner.mm_per_step[E_AXIS_N(current_block->extruder)],
-    current_block->steps.x * planner.mm_per_step[X_AXIS],
-    current_block->steps.y * planner.mm_per_step[Y_AXIS],
-    current_block->steps.z * planner.mm_per_step[Z_AXIS],
-    current_block->steps.i * planner.mm_per_step[I_AXIS],
-    current_block->steps.j * planner.mm_per_step[J_AXIS],
-    current_block->steps.k * planner.mm_per_step[K_AXIS],
-    current_block->steps.u * planner.mm_per_step[U_AXIS],
-    current_block->steps.v * planner.mm_per_step[V_AXIS],
-    current_block->steps.w * planner.mm_per_step[W_AXIS]
-  );
-
-  LOGICAL_AXIS_CODE(
-    if (!current_block->direction_bits.e) moveDist.e *= -1.0f,
-    if (!current_block->direction_bits.x) moveDist.x *= -1.0f,
-    if (!current_block->direction_bits.y) moveDist.y *= -1.0f,
-    if (!current_block->direction_bits.z) moveDist.z *= -1.0f,
-    if (!current_block->direction_bits.i) moveDist.i *= -1.0f,
-    if (!current_block->direction_bits.j) moveDist.j *= -1.0f,
-    if (!current_block->direction_bits.k) moveDist.k *= -1.0f,
-    if (!current_block->direction_bits.u) moveDist.u *= -1.0f,
-    if (!current_block->direction_bits.v) moveDist.v *= -1.0f,
-    if (!current_block->direction_bits.w) moveDist.w *= -1.0f
+    current_block->steps.e * planner.mm_per_step[E_AXIS_N(current_block->extruder)] * (current_block->direction_bits.e ? 1 : -1),
+    current_block->steps.x * planner.mm_per_step[X_AXIS] * (current_block->direction_bits.x ? 1 : -1),
+    current_block->steps.y * planner.mm_per_step[Y_AXIS] * (current_block->direction_bits.y ? 1 : -1),
+    current_block->steps.z * planner.mm_per_step[Z_AXIS] * (current_block->direction_bits.z ? 1 : -1),
+    // current_block->steps.i * planner.mm_per_step[I_AXIS] * (current_block->direction_bits.i ? 1 : -1),
+    // current_block->steps.j * planner.mm_per_step[J_AXIS] * (current_block->direction_bits.j ? 1 : -1),
+    // current_block->steps.k * planner.mm_per_step[K_AXIS] * (current_block->direction_bits.k ? 1 : -1),
+    // current_block->steps.u * planner.mm_per_step[U_AXIS] * (current_block->direction_bits.u ? 1 : -1),
+    // current_block->steps.v * planner.mm_per_step[V_AXIS] * (current_block->direction_bits.v ? 1 : -1),
+    // current_block->steps.w * planner.mm_per_step[W_AXIS] * (current_block->direction_bits.w ? 1 : -1)
   );
 
   ratio = moveDist * oneOverLength;
@@ -544,12 +531,12 @@ void FTMotion::makeVector() {
     traj.x[makeVector_batchIdx] = startPosn.x + ratio.x * dist,
     traj.y[makeVector_batchIdx] = startPosn.y + ratio.y * dist,
     traj.z[makeVector_batchIdx] = startPosn.z + ratio.z * dist,
-    traj.i[makeVector_batchIdx] = startPosn.i + ratio.i * dist,
-    traj.j[makeVector_batchIdx] = startPosn.j + ratio.j * dist,
-    traj.k[makeVector_batchIdx] = startPosn.k + ratio.k * dist,
-    traj.u[makeVector_batchIdx] = startPosn.u + ratio.u * dist,
-    traj.v[makeVector_batchIdx] = startPosn.v + ratio.v * dist,
-    traj.w[makeVector_batchIdx] = startPosn.w + ratio.w * dist
+    // traj.i[makeVector_batchIdx] = startPosn.i + ratio.i * dist,
+    // traj.j[makeVector_batchIdx] = startPosn.j + ratio.j * dist,
+    // traj.k[makeVector_batchIdx] = startPosn.k + ratio.k * dist,
+    // traj.u[makeVector_batchIdx] = startPosn.u + ratio.u * dist,
+    // traj.v[makeVector_batchIdx] = startPosn.v + ratio.v * dist,
+    // traj.w[makeVector_batchIdx] = startPosn.w + ratio.w * dist
   );
 
   #if HAS_EXTRUDERS
@@ -657,8 +644,8 @@ void FTMotion::convertToSteps(const uint32_t idx) {
     const xyze_long_t steps_tar = LOGICAL_AXIS_ARRAY(
       TOSTEPS(e, E_AXIS_N(current_block->extruder)), // May be eliminated if guaranteed positive.
       TOSTEPS(x, X_AXIS), TOSTEPS(y, Y_AXIS), TOSTEPS(z, Z_AXIS),
-      TOSTEPS(i, I_AXIS), TOSTEPS(j, J_AXIS), TOSTEPS(k, K_AXIS),
-      TOSTEPS(u, U_AXIS), TOSTEPS(v, V_AXIS), TOSTEPS(w, W_AXIS)
+      // TOSTEPS(i, I_AXIS), TOSTEPS(j, J_AXIS), TOSTEPS(k, K_AXIS),
+      // TOSTEPS(u, U_AXIS), TOSTEPS(v, V_AXIS), TOSTEPS(w, W_AXIS)
     );
     xyze_long_t delta = steps_tar - steps;
   #else
@@ -666,8 +653,8 @@ void FTMotion::convertToSteps(const uint32_t idx) {
     xyze_long_t delta = LOGICAL_AXIS_ARRAY(
       TOSTEPS(e, E_AXIS_N(current_block->extruder)),
       TOSTEPS(x, X_AXIS), TOSTEPS(y, Y_AXIS), TOSTEPS(z, Z_AXIS),
-      TOSTEPS(i, I_AXIS), TOSTEPS(j, J_AXIS), TOSTEPS(k, K_AXIS),
-      TOSTEPS(u, U_AXIS), TOSTEPS(v, V_AXIS), TOSTEPS(w, W_AXIS)
+      // TOSTEPS(i, I_AXIS), TOSTEPS(j, J_AXIS), TOSTEPS(k, K_AXIS),
+      // TOSTEPS(u, U_AXIS), TOSTEPS(v, V_AXIS), TOSTEPS(w, W_AXIS)
     );
   #endif
 
@@ -676,15 +663,19 @@ void FTMotion::convertToSteps(const uint32_t idx) {
   command_set[X_AXIS] = delta.x >= 0 ?  command_set_pos : command_set_neg,
   command_set[Y_AXIS] = delta.y >= 0 ?  command_set_pos : command_set_neg,
   command_set[Z_AXIS] = delta.z >= 0 ?  command_set_pos : command_set_neg,
-  command_set[I_AXIS] = delta.i >= 0 ?  command_set_pos : command_set_neg,
-  command_set[J_AXIS] = delta.j >= 0 ?  command_set_pos : command_set_neg,
-  command_set[K_AXIS] = delta.k >= 0 ?  command_set_pos : command_set_neg,
-  command_set[U_AXIS] = delta.u >= 0 ?  command_set_pos : command_set_neg,
-  command_set[V_AXIS] = delta.v >= 0 ?  command_set_pos : command_set_neg,
-  command_set[W_AXIS] = delta.w >= 0 ?  command_set_pos : command_set_neg
+  // command_set[I_AXIS] = delta.i >= 0 ?  command_set_pos : command_set_neg,
+  // command_set[J_AXIS] = delta.j >= 0 ?  command_set_pos : command_set_neg,
+  // command_set[K_AXIS] = delta.k >= 0 ?  command_set_pos : command_set_neg,
+  // command_set[U_AXIS] = delta.u >= 0 ?  command_set_pos : command_set_neg,
+  // command_set[V_AXIS] = delta.v >= 0 ?  command_set_pos : command_set_neg,
+  // command_set[W_AXIS] = delta.w >= 0 ?  command_set_pos : command_set_neg
   );
 
   for (uint32_t i = 0U; i < (FTM_STEPS_PER_UNIT_TIME); i++) {
+
+    // TODO: (?) Since the *delta variables will not change,
+    // the comparison may be done once before iterating at
+    // expense of storage and lines of code.
 
     // Init all step/dir bits to 0 (defaulting to reverse/negative motion)
     stepperCmdBuff[stepperCmdBuff_produceIdx] = 0;
@@ -695,12 +686,12 @@ void FTMotion::convertToSteps(const uint32_t idx) {
       command_set[X_AXIS](delta.x, err_P.x, steps.x, stepperCmdBuff[stepperCmdBuff_produceIdx], _BV(FT_BIT_DIR_X), _BV(FT_BIT_STEP_X)),
       command_set[Y_AXIS](delta.y, err_P.y, steps.y, stepperCmdBuff[stepperCmdBuff_produceIdx], _BV(FT_BIT_DIR_Y), _BV(FT_BIT_STEP_Y)),
       command_set[Z_AXIS](delta.z, err_P.z, steps.z, stepperCmdBuff[stepperCmdBuff_produceIdx], _BV(FT_BIT_DIR_Z), _BV(FT_BIT_STEP_Z)),
-      command_set[I_AXIS](delta.i, err_P.i, steps.i, stepperCmdBuff[stepperCmdBuff_produceIdx], _BV(FT_BIT_DIR_I), _BV(FT_BIT_STEP_I)),
-      command_set[J_AXIS](delta.j, err_P.j, steps.j, stepperCmdBuff[stepperCmdBuff_produceIdx], _BV(FT_BIT_DIR_J), _BV(FT_BIT_STEP_J)),
-      command_set[K_AXIS](delta.k, err_P.k, steps.k, stepperCmdBuff[stepperCmdBuff_produceIdx], _BV(FT_BIT_DIR_K), _BV(FT_BIT_STEP_K)),
-      command_set[U_AXIS](delta.u, err_P.u, steps.u, stepperCmdBuff[stepperCmdBuff_produceIdx], _BV(FT_BIT_DIR_U), _BV(FT_BIT_STEP_U)),
-      command_set[V_AXIS](delta.v, err_P.v, steps.v, stepperCmdBuff[stepperCmdBuff_produceIdx], _BV(FT_BIT_DIR_V), _BV(FT_BIT_STEP_V)),
-      command_set[W_AXIS](delta.w, err_P.w, steps.w, stepperCmdBuff[stepperCmdBuff_produceIdx], _BV(FT_BIT_DIR_W), _BV(FT_BIT_STEP_W)),
+      // command_set[I_AXIS](delta.i, err_P.i, steps.i, stepperCmdBuff[stepperCmdBuff_produceIdx], _BV(FT_BIT_DIR_I), _BV(FT_BIT_STEP_I)),
+      // command_set[J_AXIS](delta.j, err_P.j, steps.j, stepperCmdBuff[stepperCmdBuff_produceIdx], _BV(FT_BIT_DIR_J), _BV(FT_BIT_STEP_J)),
+      // command_set[K_AXIS](delta.k, err_P.k, steps.k, stepperCmdBuff[stepperCmdBuff_produceIdx], _BV(FT_BIT_DIR_K), _BV(FT_BIT_STEP_K)),
+      // command_set[U_AXIS](delta.u, err_P.u, steps.u, stepperCmdBuff[stepperCmdBuff_produceIdx], _BV(FT_BIT_DIR_U), _BV(FT_BIT_STEP_U)),
+      // command_set[V_AXIS](delta.v, err_P.v, steps.v, stepperCmdBuff[stepperCmdBuff_produceIdx], _BV(FT_BIT_DIR_V), _BV(FT_BIT_STEP_V)),
+      // command_set[W_AXIS](delta.w, err_P.w, steps.w, stepperCmdBuff[stepperCmdBuff_produceIdx], _BV(FT_BIT_DIR_W), _BV(FT_BIT_STEP_W)),
     );
 
     if (++stepperCmdBuff_produceIdx == (FTM_STEPPERCMD_BUFF_SIZE))

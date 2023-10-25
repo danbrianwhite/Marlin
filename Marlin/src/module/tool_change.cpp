@@ -1050,14 +1050,14 @@ void fast_line_to_current(const AxisEnum fr_axis) { _line_to_current(fr_axis, 0.
           IF_DISABLED(TOOLCHANGE_PARK_Y_ONLY, current_position.x = toolchange_settings.change_point.x);
           IF_DISABLED(TOOLCHANGE_PARK_X_ONLY, current_position.y = toolchange_settings.change_point.y);
           #if NONE(TOOLCHANGE_PARK_X_ONLY, TOOLCHANGE_PARK_Y_ONLY)
-            SECONDARY_AXIS_CODE(
-              current_position.i = toolchange_settings.change_point.i,
-              current_position.j = toolchange_settings.change_point.j,
-              current_position.k = toolchange_settings.change_point.k,
-              current_position.u = toolchange_settings.change_point.u,
-              current_position.v = toolchange_settings.change_point.v,
-              current_position.w = toolchange_settings.change_point.w
-            );
+            // SECONDARY_AXIS_CODE(
+            //   current_position.i = toolchange_settings.change_point.i,
+            //   current_position.j = toolchange_settings.change_point.j,
+            //   current_position.k = toolchange_settings.change_point.k,
+            //   current_position.u = toolchange_settings.change_point.u,
+            //   current_position.v = toolchange_settings.change_point.v,
+            //   current_position.w = toolchange_settings.change_point.w
+            // );
           #endif
           planner.buffer_line(current_position, MMM_TO_MMS(TOOLCHANGE_PARK_XY_FEEDRATE), active_extruder);
           planner.synchronize();
@@ -1234,14 +1234,14 @@ void tool_change(const uint8_t new_tool, bool no_move/*=false*/) {
           IF_DISABLED(TOOLCHANGE_PARK_Y_ONLY, current_position.x = toolchange_settings.change_point.x);
           IF_DISABLED(TOOLCHANGE_PARK_X_ONLY, current_position.y = toolchange_settings.change_point.y);
           #if NONE(TOOLCHANGE_PARK_X_ONLY, TOOLCHANGE_PARK_Y_ONLY)
-            SECONDARY_AXIS_CODE(
-              current_position.i = toolchange_settings.change_point.i,
-              current_position.j = toolchange_settings.change_point.j,
-              current_position.k = toolchange_settings.change_point.k,
-              current_position.u = toolchange_settings.change_point.u,
-              current_position.v = toolchange_settings.change_point.v,
-              current_position.w = toolchange_settings.change_point.w
-            );
+            // SECONDARY_AXIS_CODE(
+            //   current_position.i = toolchange_settings.change_point.i,
+            //   current_position.j = toolchange_settings.change_point.j,
+            //   current_position.k = toolchange_settings.change_point.k,
+            //   current_position.u = toolchange_settings.change_point.u,
+            //   current_position.v = toolchange_settings.change_point.v,
+            //   current_position.w = toolchange_settings.change_point.w
+            // );
           #endif
           planner.buffer_line(current_position, MMM_TO_MMS(TOOLCHANGE_PARK_XY_FEEDRATE), old_tool);
           planner.synchronize();
@@ -1354,14 +1354,14 @@ void tool_change(const uint8_t new_tool, bool no_move/*=false*/) {
               // If using MECHANICAL_SWITCHING extruder/nozzle, set HOTEND_OFFSET in Z axis after running EVENT_GCODE_TOOLCHANGE below.
               #if NONE(MECHANICAL_SWITCHING_EXTRUDER, MECHANICAL_SWITCHING_NOZZLE)
                 do_blocking_move_to_z(destination.z, planner.settings.max_feedrate_mm_s[Z_AXIS]);
-                SECONDARY_AXIS_CODE(
-                  do_blocking_move_to_i(destination.i, planner.settings.max_feedrate_mm_s[I_AXIS]),
-                  do_blocking_move_to_j(destination.j, planner.settings.max_feedrate_mm_s[J_AXIS]),
-                  do_blocking_move_to_k(destination.k, planner.settings.max_feedrate_mm_s[K_AXIS]),
-                  do_blocking_move_to_u(destination.u, planner.settings.max_feedrate_mm_s[U_AXIS]),
-                  do_blocking_move_to_v(destination.v, planner.settings.max_feedrate_mm_s[V_AXIS]),
-                  do_blocking_move_to_w(destination.w, planner.settings.max_feedrate_mm_s[W_AXIS])
-                );
+                // SECONDARY_AXIS_CODE(
+                //   do_blocking_move_to_i(destination.i, planner.settings.max_feedrate_mm_s[I_AXIS]),
+                //   do_blocking_move_to_j(destination.j, planner.settings.max_feedrate_mm_s[J_AXIS]),
+                //   do_blocking_move_to_k(destination.k, planner.settings.max_feedrate_mm_s[K_AXIS]),
+                //   do_blocking_move_to_u(destination.u, planner.settings.max_feedrate_mm_s[U_AXIS]),
+                //   do_blocking_move_to_v(destination.v, planner.settings.max_feedrate_mm_s[V_AXIS]),
+                //   do_blocking_move_to_w(destination.w, planner.settings.max_feedrate_mm_s[W_AXIS])
+                // );
               #endif
             #endif
 

@@ -537,14 +537,14 @@ void GcodeSuite::G28() {
           }
         #endif
 
-        SECONDARY_AXIS_CODE(
-          if (doI) homeaxis(I_AXIS),
-          if (doJ) homeaxis(J_AXIS),
-          if (doK) homeaxis(K_AXIS),
-          if (doU) homeaxis(U_AXIS),
-          if (doV) homeaxis(V_AXIS),
-          if (doW) homeaxis(W_AXIS)
-        );
+        // SECONDARY_AXIS_CODE(
+        //   if (doI) homeaxis(I_AXIS),
+        //   if (doJ) homeaxis(J_AXIS),
+        //   if (doK) homeaxis(K_AXIS),
+        //   if (doU) homeaxis(U_AXIS),
+        //   if (doV) homeaxis(V_AXIS),
+        //   if (doW) homeaxis(W_AXIS)
+        // );
 
       #endif // HAS_Z_AXIS
 

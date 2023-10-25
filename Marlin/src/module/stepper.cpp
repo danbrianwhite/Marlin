@@ -78,6 +78,7 @@
  */
 
 #include "stepper.h"
+#include <time.h>
 
 Stepper stepper; // Singleton
 
@@ -168,6 +169,7 @@ block_t* Stepper::current_block; // (= nullptr) A pointer to the block currently
 
 AxisBits Stepper::last_direction_bits, // = 0
          Stepper::axis_did_move; // = 0
+AxisBits axis_step;
 
 bool Stepper::abort_current_block;
 
@@ -243,13 +245,6 @@ uint32_t Stepper::advance_divisor = 0,
               Stepper::la_dividend = 0,
               Stepper::la_advance_steps = 0;
   bool        Stepper::la_active = false;
-#endif
-
-#if ENABLED(NONLINEAR_EXTRUSION)
-  ne_coeff_t Stepper::ne;
-  ne_fix_t Stepper::ne_fix;
-  int32_t Stepper::ne_edividend;
-  uint32_t Stepper::ne_scale;
 #endif
 
 #if HAS_ZV_SHAPING
@@ -1516,10 +1511,10 @@ void Stepper::isr() {
 
         // Define 2.5 msec task for auxiliary functions.
         if (!ftMotion_nextAuxISR) {
-          ftMotion_refreshAxisDidMove();
-          endstops.update();
-          TERN_(BABYSTEPPING, if (babystep.has_steps()) babystepping_isr());
-          ftMotion_nextAuxISR = 0.0025f * (STEPPER_TIMER_RATE); // Aux task magic number
+          axis_did_move = axis_step;
+          // endstops.update();
+          // TERN_(BABYSTEPPING, if (babystep.has_steps()) babystepping_isr());
+          ftMotion_nextAuxISR = 0.0150f * (STEPPER_TIMER_RATE); // Aux task magic number
         }
 
         interval = _MIN(nextMainISR, ftMotion_nextAuxISR);
@@ -1531,7 +1526,7 @@ void Stepper::isr() {
 
     if (!using_ftMotion) {
 
-      TERN_(HAS_ZV_SHAPING, shaping_isr());               // Do Shaper stepping, if needed
+      // TERN_(HAS_ZV_SHAPING, shaping_isr());               // Do Shaper stepping, if needed
 
       if (!nextMainISR) pulse_phase_isr();                // 0 = Do coordinated axes Stepper pulses
 
@@ -2161,16 +2156,6 @@ hal_timer_t Stepper::calc_timer_interval(uint32_t step_rate) {
   #endif // !CPU_32_BIT
 }
 
-#if ENABLED(NONLINEAR_EXTRUSION)
-  void Stepper::calc_nonlinear_e(uint32_t step_rate) {
-    const uint32_t velocity = ne_scale * step_rate; // Scale step_rate first so all intermediate values stay in range of 8.24 fixed point math
-    int32_t vd = (((int64_t)ne_fix.A * velocity) >> 24) + (((((int64_t)ne_fix.B * velocity) >> 24) * velocity) >> 24);
-    NOLESS(vd, 0);
-
-    advance_dividend.e = (uint64_t(ne_fix.C + vd) * ne_edividend) >> 24;
-  }
-#endif
-
 // Get the timer interval and the number of loops to perform per tick
 hal_timer_t Stepper::calc_multistep_timer_interval(uint32_t step_rate) {
 
@@ -2298,10 +2283,6 @@ hal_timer_t Stepper::block_phase_isr() {
         interval = calc_multistep_timer_interval(acc_step_rate << oversampling_factor);
         acceleration_time += interval;
 
-        #if ENABLED(NONLINEAR_EXTRUSION)
-          calc_nonlinear_e(acc_step_rate << oversampling_factor);
-        #endif
-
         #if ENABLED(LIN_ADVANCE)
           if (la_active) {
             const uint32_t la_step_rate = la_advance_steps < current_block->max_adv_steps ? current_block->la_advance_rate : 0;
@@ -2372,10 +2353,6 @@ hal_timer_t Stepper::block_phase_isr() {
         interval = calc_multistep_timer_interval(step_rate << oversampling_factor);
         deceleration_time += interval;
 
-        #if ENABLED(NONLINEAR_EXTRUSION)
-          calc_nonlinear_e(step_rate << oversampling_factor);
-        #endif
-
         #if ENABLED(LIN_ADVANCE)
           if (la_active) {
             const uint32_t la_step_rate = la_advance_steps > current_block->final_adv_steps ? current_block->la_advance_rate : 0;
@@ -2423,10 +2400,6 @@ hal_timer_t Stepper::block_phase_isr() {
         if (ticks_nominal == 0) {
           // step_rate to timer interval and loops for the nominal speed
           ticks_nominal = calc_multistep_timer_interval(current_block->nominal_rate << oversampling_factor);
-
-          #if ENABLED(NONLINEAR_EXTRUSION)
-            calc_nonlinear_e(current_block->nominal_rate << oversampling_factor);
-          #endif
 
           #if ENABLED(LIN_ADVANCE)
             if (la_active)
@@ -2611,12 +2584,12 @@ hal_timer_t Stepper::block_phase_isr() {
         if (X_MOVE_TEST)            didmove.a = true,
         if (Y_MOVE_TEST)            didmove.b = true,
         if (Z_MOVE_TEST)            didmove.c = true,
-        if (current_block->steps.i) didmove.i = true,
-        if (current_block->steps.j) didmove.j = true,
-        if (current_block->steps.k) didmove.k = true,
-        if (current_block->steps.u) didmove.u = true,
-        if (current_block->steps.v) didmove.v = true,
-        if (current_block->steps.w) didmove.w = true
+        // if (current_block->steps.i) didmove.i = true,
+        // if (current_block->steps.j) didmove.j = true,
+        // if (current_block->steps.k) didmove.k = true,
+        // if (current_block->steps.u) didmove.u = true,
+        // if (current_block->steps.v) didmove.v = true,
+        // if (current_block->steps.w) didmove.w = true
       );
       //if (current_block->steps.e) didmove.e = true;
       //if (current_block->steps.a) didmove.x = true;
@@ -2628,13 +2601,10 @@ hal_timer_t Stepper::block_phase_isr() {
       acceleration_time = deceleration_time = 0;
 
       #if ENABLED(ADAPTIVE_STEP_SMOOTHING)
-        // Nonlinear Extrusion needs at least 2x oversampling to permit increase of E step rate
-        // Otherwise assume no axis smoothing (via oversampling)
-        oversampling_factor = TERN(NONLINEAR_EXTRUSION, 1, 0);
-
+        oversampling_factor = 0;                            // Assume no axis smoothing (via oversampling)
         // Decide if axis smoothing is possible
+        uint32_t max_rate = current_block->nominal_rate;    // Get the step event rate
         if (TERN1(DWIN_LCD_PROUI, hmiData.adaptiveStepSmoothing)) {
-          uint32_t max_rate = current_block->nominal_rate;  // Get the step event rate
           while (max_rate < MIN_STEP_ISR_FREQUENCY) {       // As long as more ISRs are possible...
             max_rate <<= 1;                                 // Try to double the rate
             if (max_rate < MIN_STEP_ISR_FREQUENCY)          // Don't exceed the estimated ISR limit
@@ -2750,28 +2720,9 @@ hal_timer_t Stepper::block_phase_isr() {
         acc_step_rate = current_block->initial_rate;
       #endif
 
-      #if ENABLED(NONLINEAR_EXTRUSION)
-        ne_edividend = advance_dividend.e;
-        const float scale = (float(ne_edividend) / advance_divisor) * planner.mm_per_step[E_AXIS_N(current_block->extruder)];
-        ne_scale = (1L << 24) * scale;
-        if (current_block->direction_bits.e) {
-          ne_fix.A = (1L << 24) * ne.A;
-          ne_fix.B = (1L << 24) * ne.B;
-          ne_fix.C = (1L << 24) * ne.C;
-        }
-        else {
-          ne_fix.A = ne_fix.B = 0;
-          ne_fix.C = (1L << 24);
-        }
-      #endif
-
       // Calculate the initial timer interval
       interval = calc_multistep_timer_interval(current_block->initial_rate << oversampling_factor);
       acceleration_time += interval;
-
-      #if ENABLED(NONLINEAR_EXTRUSION)
-        calc_nonlinear_e(current_block->initial_rate << oversampling_factor);
-      #endif
 
       #if ENABLED(LIN_ADVANCE)
         if (la_active) {
@@ -2894,10 +2845,10 @@ void Stepper::init() {
       Z4_DIR_INIT();
     #endif
   #endif
-  SECONDARY_AXIS_CODE(
-    I_DIR_INIT(), J_DIR_INIT(), K_DIR_INIT(),
-    U_DIR_INIT(), V_DIR_INIT(), W_DIR_INIT()
-  );
+  // SECONDARY_AXIS_CODE(
+  //   I_DIR_INIT(), J_DIR_INIT(), K_DIR_INIT(),
+  //   U_DIR_INIT(), V_DIR_INIT(), W_DIR_INIT()
+  // );
   #if HAS_E0_DIR
     E0_DIR_INIT();
   #endif
@@ -3257,14 +3208,14 @@ void Stepper::_set_position(const abce_long_t &spos) {
     #elif ENABLED(MARKFORGED_YX)
       count_position.set(spos.a, spos.b - spos.a, spos.c);
     #endif
-    SECONDARY_AXIS_CODE(
-      count_position.i = spos.i,
-      count_position.j = spos.j,
-      count_position.k = spos.k,
-      count_position.u = spos.u,
-      count_position.v = spos.v,
-      count_position.w = spos.w
-    );
+    // SECONDARY_AXIS_CODE(
+    //   count_position.i = spos.i,
+    //   count_position.j = spos.j,
+    //   count_position.k = spos.k,
+    //   count_position.u = spos.u,
+    //   count_position.v = spos.v,
+    //   count_position.w = spos.w
+    // );
     TERN_(HAS_EXTRUDERS, count_position.e = spos.e);
   #else
     // default non-h-bot planning
@@ -3421,8 +3372,8 @@ void Stepper::report_a_position(const xyz_long_t &pos) {
         TERN(SAYS_A, PSTR(STR_COUNT_A), PSTR(STR_COUNT_X)), pos.x,
         TERN(SAYS_B, PSTR("B:"), SP_Y_LBL), pos.y,
         TERN(SAYS_C, PSTR("C:"), SP_Z_LBL), pos.z,
-        SP_I_LBL, pos.i, SP_J_LBL, pos.j, SP_K_LBL, pos.k,
-        SP_U_LBL, pos.u, SP_V_LBL, pos.v, SP_W_LBL, pos.w
+        // SP_I_LBL, pos.i, SP_J_LBL, pos.j, SP_K_LBL, pos.k,
+        // SP_U_LBL, pos.u, SP_V_LBL, pos.v, SP_W_LBL, pos.w
       )
     );
   #endif
@@ -3446,8 +3397,6 @@ void Stepper::report_positions() {
 
 #if ENABLED(FT_MOTION)
 
-  AxisBits Stepper::didMoveReport;
-
   // Set stepper I/O for fixed time controller.
   void Stepper::ftMotion_stepper() {
 
@@ -3465,18 +3414,11 @@ void Stepper::report_positions() {
 
     USING_TIMED_PULSE();
 
-    const xyze_bool_t axis_step = LOGICAL_AXIS_ARRAY(
+    axis_step = LOGICAL_AXIS_ARRAY(
       TEST(command, FT_BIT_STEP_E),
       TEST(command, FT_BIT_STEP_X), TEST(command, FT_BIT_STEP_Y), TEST(command, FT_BIT_STEP_Z),
-      TEST(command, FT_BIT_STEP_I), TEST(command, FT_BIT_STEP_J), TEST(command, FT_BIT_STEP_K),
-      TEST(command, FT_BIT_STEP_U), TEST(command, FT_BIT_STEP_V), TEST(command, FT_BIT_STEP_W)
-    );
-
-    LOGICAL_AXIS_CODE(
-      didMoveReport.e |= axis_step.e,
-      didMoveReport.x |= axis_step.x, didMoveReport.y |= axis_step.y, didMoveReport.z |= axis_step.z,
-      didMoveReport.i |= axis_step.i, didMoveReport.j |= axis_step.j, didMoveReport.k |= axis_step.k,
-      didMoveReport.u |= axis_step.u, didMoveReport.v |= axis_step.v, didMoveReport.w |= axis_step.w
+      // TEST(command, FT_BIT_STEP_I), TEST(command, FT_BIT_STEP_J), TEST(command, FT_BIT_STEP_K),
+      // TEST(command, FT_BIT_STEP_U), TEST(command, FT_BIT_STEP_V), TEST(command, FT_BIT_STEP_W)
     );
 
     last_direction_bits = LOGICAL_AXIS_ARRAY(
@@ -3484,20 +3426,20 @@ void Stepper::report_positions() {
       axis_step.x ? TEST(command, FT_BIT_DIR_X) : last_direction_bits.x,
       axis_step.y ? TEST(command, FT_BIT_DIR_Y) : last_direction_bits.y,
       axis_step.z ? TEST(command, FT_BIT_DIR_Z) : last_direction_bits.z,
-      axis_step.i ? TEST(command, FT_BIT_DIR_I) : last_direction_bits.i,
-      axis_step.j ? TEST(command, FT_BIT_DIR_J) : last_direction_bits.j,
-      axis_step.k ? TEST(command, FT_BIT_DIR_K) : last_direction_bits.k,
-      axis_step.u ? TEST(command, FT_BIT_DIR_U) : last_direction_bits.u,
-      axis_step.v ? TEST(command, FT_BIT_DIR_V) : last_direction_bits.v,
-      axis_step.w ? TEST(command, FT_BIT_DIR_W) : last_direction_bits.w
+      // axis_step.i ? TEST(command, FT_BIT_DIR_I) : last_direction_bits.i,
+      // axis_step.j ? TEST(command, FT_BIT_DIR_J) : last_direction_bits.j,
+      // axis_step.k ? TEST(command, FT_BIT_DIR_K) : last_direction_bits.k,
+      // axis_step.u ? TEST(command, FT_BIT_DIR_U) : last_direction_bits.u,
+      // axis_step.v ? TEST(command, FT_BIT_DIR_V) : last_direction_bits.v,
+      // axis_step.w ? TEST(command, FT_BIT_DIR_W) : last_direction_bits.w
     );
 
     // Apply directions (which will apply to the entire linear move)
     LOGICAL_AXIS_CODE(
       E_APPLY_DIR(last_direction_bits.e, false),
       X_APPLY_DIR(last_direction_bits.x, false), Y_APPLY_DIR(last_direction_bits.y, false), Z_APPLY_DIR(last_direction_bits.z, false),
-      I_APPLY_DIR(last_direction_bits.i, false), J_APPLY_DIR(last_direction_bits.j, false), K_APPLY_DIR(last_direction_bits.k, false),
-      U_APPLY_DIR(last_direction_bits.u, false), V_APPLY_DIR(last_direction_bits.v, false), W_APPLY_DIR(last_direction_bits.w, false)
+      // I_APPLY_DIR(last_direction_bits.i, false), J_APPLY_DIR(last_direction_bits.j, false), K_APPLY_DIR(last_direction_bits.k, false),
+      // U_APPLY_DIR(last_direction_bits.u, false), V_APPLY_DIR(last_direction_bits.v, false), W_APPLY_DIR(last_direction_bits.w, false)
     );
 
     DIR_WAIT_AFTER();
@@ -3506,8 +3448,8 @@ void Stepper::report_positions() {
     LOGICAL_AXIS_CODE(
       E_APPLY_STEP(axis_step.e, false),
       X_APPLY_STEP(axis_step.x, false), Y_APPLY_STEP(axis_step.y, false), Z_APPLY_STEP(axis_step.z, false),
-      I_APPLY_STEP(axis_step.i, false), J_APPLY_STEP(axis_step.j, false), K_APPLY_STEP(axis_step.k, false),
-      U_APPLY_STEP(axis_step.u, false), V_APPLY_STEP(axis_step.v, false), W_APPLY_STEP(axis_step.w, false)
+      // I_APPLY_STEP(axis_step.i, false), J_APPLY_STEP(axis_step.j, false), K_APPLY_STEP(axis_step.k, false),
+      // U_APPLY_STEP(axis_step.u, false), V_APPLY_STEP(axis_step.v, false), W_APPLY_STEP(axis_step.w, false)
     );
 
     // Begin waiting for the minimum pulse duration
@@ -3517,9 +3459,9 @@ void Stepper::report_positions() {
     LOGICAL_AXIS_CODE(
       if (axis_step.e) count_position.e += last_direction_bits.e ? 1 : -1, if (axis_step.x) count_position.x += last_direction_bits.x ? 1 : -1,
       if (axis_step.y) count_position.y += last_direction_bits.y ? 1 : -1, if (axis_step.z) count_position.z += last_direction_bits.z ? 1 : -1,
-      if (axis_step.i) count_position.i += last_direction_bits.i ? 1 : -1, if (axis_step.j) count_position.j += last_direction_bits.j ? 1 : -1,
-      if (axis_step.k) count_position.k += last_direction_bits.k ? 1 : -1, if (axis_step.u) count_position.u += last_direction_bits.u ? 1 : -1,
-      if (axis_step.v) count_position.v += last_direction_bits.v ? 1 : -1, if (axis_step.w) count_position.w += last_direction_bits.w ? 1 : -1
+      // if (axis_step.i) count_position.i += last_direction_bits.i ? 1 : -1, if (axis_step.j) count_position.j += last_direction_bits.j ? 1 : -1,
+      // if (axis_step.k) count_position.k += last_direction_bits.k ? 1 : -1, if (axis_step.u) count_position.u += last_direction_bits.u ? 1 : -1,
+      // if (axis_step.v) count_position.v += last_direction_bits.v ? 1 : -1, if (axis_step.w) count_position.w += last_direction_bits.w ? 1 : -1
     );
 
     #if HAS_EXTRUDERS
@@ -3536,8 +3478,8 @@ void Stepper::report_positions() {
     const bool any_wait = false LOGICAL_AXIS_GANG(
       || (!e_axis_has_dedge && axis_step.e),
       || (!AXIS_HAS_DEDGE(X) && axis_step.x), || (!AXIS_HAS_DEDGE(Y) && axis_step.y), || (!AXIS_HAS_DEDGE(Z) && axis_step.z),
-      || (!AXIS_HAS_DEDGE(I) && axis_step.i), || (!AXIS_HAS_DEDGE(J) && axis_step.j), || (!AXIS_HAS_DEDGE(K) && axis_step.k),
-      || (!AXIS_HAS_DEDGE(U) && axis_step.u), || (!AXIS_HAS_DEDGE(V) && axis_step.v), || (!AXIS_HAS_DEDGE(W) && axis_step.w)
+      // || (!AXIS_HAS_DEDGE(I) && axis_step.i), || (!AXIS_HAS_DEDGE(J) && axis_step.j), || (!AXIS_HAS_DEDGE(K) && axis_step.k),
+      // || (!AXIS_HAS_DEDGE(U) && axis_step.u), || (!AXIS_HAS_DEDGE(V) && axis_step.v), || (!AXIS_HAS_DEDGE(W) && axis_step.w)
     );
 
     // Allow pulses to be registered by stepper drivers
@@ -3547,10 +3489,9 @@ void Stepper::report_positions() {
     LOGICAL_AXIS_CODE(
       E_APPLY_STEP(!STEP_STATE_E, false),
       X_APPLY_STEP(!STEP_STATE_X, false), Y_APPLY_STEP(!STEP_STATE_Y, false), Z_APPLY_STEP(!STEP_STATE_Z, false),
-      I_APPLY_STEP(!STEP_STATE_I, false), J_APPLY_STEP(!STEP_STATE_J, false), K_APPLY_STEP(!STEP_STATE_K, false),
-      U_APPLY_STEP(!STEP_STATE_U, false), V_APPLY_STEP(!STEP_STATE_V, false), W_APPLY_STEP(!STEP_STATE_W, false)
+      // I_APPLY_STEP(!STEP_STATE_I, false), J_APPLY_STEP(!STEP_STATE_J, false), K_APPLY_STEP(!STEP_STATE_K, false),
+      // U_APPLY_STEP(!STEP_STATE_U, false), V_APPLY_STEP(!STEP_STATE_V, false), W_APPLY_STEP(!STEP_STATE_W, false)
     );
-
   } // Stepper::ftMotion_stepper
 
   void Stepper::ftMotion_blockQueueUpdate() {
@@ -3595,7 +3536,7 @@ void Stepper::report_positions() {
     //#else
     //  #define X_MOVE_TEST !!current_block->steps.a
     //#endif
-
+/*
     #define FTM_AXIS_MOVE_DEB_TI 0.05
 
     static xyze_ulong_t didMoveDeb;
@@ -3628,7 +3569,8 @@ void Stepper::report_positions() {
 
     axis_did_move = didmove;
 
-    didMoveReport.reset();
+    didMoveReport.reset(); */
+    axis_did_move = axis_step;
   }
 
 #endif // FT_MOTION
