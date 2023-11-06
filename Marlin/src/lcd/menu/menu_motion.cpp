@@ -430,7 +430,7 @@ void menu_move() {
 
     #if HAS_EXTRUDERS
       EDIT_ITEM(bool, MSG_LINEAR_ADVANCE, &c.linearAdvEna);
-      EDIT_ITEM(float42_52, MSG_ADVANCE_K, &c.linearAdvK, 0, 10);
+      EDIT_ITEM(float42_52, MSG_ADVANCE_K, &c.linearAdvK, 0, 100);
     #endif
 
     END_MENU();

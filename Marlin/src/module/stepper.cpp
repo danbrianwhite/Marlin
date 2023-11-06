@@ -1514,7 +1514,7 @@ void Stepper::isr() {
           axis_did_move = axis_step;
           // endstops.update();
           // TERN_(BABYSTEPPING, if (babystep.has_steps()) babystepping_isr());
-          ftMotion_nextAuxISR = 0.0150f * (STEPPER_TIMER_RATE); // Aux task magic number
+          ftMotion_nextAuxISR = 0.0025f * (STEPPER_TIMER_RATE); // Aux task magic number
         }
 
         interval = _MIN(nextMainISR, ftMotion_nextAuxISR);

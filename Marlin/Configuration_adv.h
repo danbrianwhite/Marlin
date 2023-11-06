@@ -1123,8 +1123,8 @@
   #define FTM_DEFAULT_DYNFREQ_MODE dynFreqMode_DISABLED // Default mode of dynamic frequency calculation. (Enums in ft_types.h)
   #define FTM_SHAPING_DEFAULT_X_FREQ 48.6f              // (Hz) Default peak frequency used by input shapers.
   #define FTM_SHAPING_DEFAULT_Y_FREQ 48.6f              // (Hz) Default peak frequency used by input shapers.
-  #define FTM_LINEAR_ADV_DEFAULT_ENA false              // Default linear advance enable (true) or disable (false).
-  #define FTM_LINEAR_ADV_DEFAULT_K    0.01f              // Default linear advance gain.
+  #define FTM_LINEAR_ADV_DEFAULT_ENA true              // Default linear advance enable (true) or disable (false).
+  #define FTM_LINEAR_ADV_DEFAULT_K    0.001f              // Default linear advance gain.
   #define FTM_SHAPING_ZETA            0.1f              // Zeta used by input shapers.
   #define FTM_SHAPING_V_TOL           0.05f             // Vibration tolerance used by EI input shapers.
 
@@ -1147,7 +1147,7 @@
 
     // This value may be configured to adjust duration to consume the command buffer.
     // Try increasing this value if stepper motion is not smooth.
-    #define FTM_STEPPERCMD_BUFF_SIZE 6000               // Size of the stepper command buffers.
+    #define FTM_STEPPERCMD_BUFF_SIZE 30000               // Size of the stepper command buffers.
                                                         // (FTM_STEPS_PER_LOOP * FTM_POINTS_PER_LOOP) is a good start
                                                         // If you run out of memory, fall back to 3000 and increase progressively.
   #else
